@@ -45,3 +45,15 @@ decoder = Model(encoded_input, decoder_layer(encoded_input))
 
 # Compiling the model
 autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
+
+# training the model
+autoencoder.fit(x_train, x_train,
+                epochs=50,
+                batch_size=256,
+                shuffle=True,
+                validation_data=(x_test, x_test))
+
+
+# Saving the model
+from keras.models import load_model
+autoencoder.save('autoencoder.h5')  # creates a HDF5 file 'my_model.h5'
