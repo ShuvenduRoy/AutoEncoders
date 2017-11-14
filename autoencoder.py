@@ -57,3 +57,28 @@ autoencoder.fit(x_train, x_train,
 # Saving the model
 from keras.models import load_model
 autoencoder.save('autoencoder.h5')  # creates a HDF5 file 'my_model.h5'
+
+
+# Test the encoding decoding
+encoded_imgs = encoder.predict(x_test)
+decoded_imgs = decoder.predict(encoded_imgs)
+
+import matplotlib.pyplot as plt
+
+n = 10  # how many digits we will display
+plt.figure(figsize=(20, 4))
+for i in range(n):
+    # display original
+    ax = plt.subplot(2, n, i + 1)
+    plt.imshow(x_test[i].reshape(28, 28))
+    plt.gray()
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
+
+    # display reconstruction
+    ax = plt.subplot(2, n, i + 1 + n)
+    plt.imshow(decoded_imgs[i].reshape(28, 28))
+    plt.gray()
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
+plt.show()
