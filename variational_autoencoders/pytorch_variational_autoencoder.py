@@ -7,7 +7,7 @@ import torchvision.datasets as dsets
 import torchvision.transforms as transforms
 import torch.nn.functional as F
 from torch.autograd import Variable
-
+from tqdm import tnrange
 from pathlib import Path
 
 batch_size = 128
@@ -61,8 +61,8 @@ class VAE(nn.Module):
         # Instead we utilize the 'reparameterization trick'.
         # http://stats.stackexchange.com/a/205336
         # http://dpkingma.com/wordpress/wp-content/uploads/2015/12/talk_nips_workshop_2015.pdf
-        sd = torch.exp(logvar*0.5)
-        e = Variable(torch.randn(sd.size())) # sample from standard normal
+        sd = torch.exp(logvar * 0.5)
+        e = Variable(torch.randn(sd.size()))  # sample from standard normal
         z = e.mul(sd).add_(mean)
         return z
 
@@ -72,5 +72,41 @@ class VAE(nn.Module):
         x_out = self.decoder(z)
         return x_out, z_mean, z_logvar
 
+
 model = VAE()
 
+
+# Loss function
+def criterion(x_out, x_in, z_mu, z_logvar):
+    bce_loss = F.binary_cross_entropy(x_out, x_in, size_average=False)
+    kld_loss = -0.5 * torch.sum(1 + z_logvar - (z_mu ** 2) - torch.exp(z_logvar))
+    loss = (bce_loss + kld_loss) / x_out.size(0)  # normalize by batch size
+    return loss
+
+
+# optimizer
+optimizer = torch.optim.Adam(model.parameters())
+
+
+# Training
+def train(model, optimizer, dataloader, epochs=15):
+    losses = []
+    for epoch in tnrange(epochs, desc='Epochs'):
+        for iter, (images, _) in enumerate(dataloader):
+            x_in = Variable(images)
+            optimizer.zero_grad()
+            x_out, z_mu, z_logvar = model(x_in)
+            loss = criterion(x_out, x_in, z_mu, z_logvar)
+            loss.backward()
+            optimizer.step()
+            losses.append(loss.data[0])
+
+            if(iter+1)%100 ==0:
+                print("Epoch: [{0}/{1}], Iter: [{2}/{3}] loss: {4}".format(epoch+1, epochs, iter+1, len(dataloader), loss.data[0]))
+    return losses
+
+
+train_losses = train(model, optimizer, train_loader)
+plt.figure(figsize=(10, 5))
+plt.plot(train_losses)
+plt.show()
