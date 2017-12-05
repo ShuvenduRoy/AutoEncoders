@@ -89,7 +89,7 @@ optimizer = torch.optim.Adam(model.parameters())
 
 
 # Training
-def train(model, optimizer, dataloader, epochs=15):
+def train(model, optimizer, dataloader, epochs=5):
     losses = []
     for epoch in tnrange(epochs, desc='Epochs'):
         for iter, (images, _) in enumerate(dataloader):
@@ -106,11 +106,11 @@ def train(model, optimizer, dataloader, epochs=15):
     return losses
 
 
-train_losses = train(model, optimizer, train_loader)
-plt.figure(figsize=(10, 5))
-plt.plot(train_losses)
-plt.show()
+if __name__ == '__main__':
+    train_losses = train(model, optimizer, train_loader)
+    plt.figure(figsize=(10, 5))
+    plt.plot(train_losses)
+    plt.show()
 
-
-# save the model
-torch.save(model.state_dict(), 'model.pkl')
+    # save the model
+    torch.save(model.state_dict(), 'model.pkl')
