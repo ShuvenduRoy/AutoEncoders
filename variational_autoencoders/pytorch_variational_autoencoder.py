@@ -110,3 +110,7 @@ train_losses = train(model, optimizer, train_loader)
 plt.figure(figsize=(10, 5))
 plt.plot(train_losses)
 plt.show()
+
+
+# save the model
+torch.save(model.state_dict(), 'model.pkl')
